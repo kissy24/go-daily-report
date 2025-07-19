@@ -42,9 +42,22 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "q":
 		return m, tea.Quit
 	case "n":
-		m.currentView = CreateView
-		m.isEditing = false
-		m.contentArea.SetValue("")
+		today := time.Now().Format("2006-01-02")
+		_, index, found := m.FindReportByDate(today) // report を _ で無視
+		if found {
+			m.cursor = index
+			m.currentView = DetailView
+		} else {
+			newReport := models.Report{
+				ID:      m.nextID,
+				Content: "", // 空の内容で作成
+				Date:    time.Now(),
+			}
+			m.reports = append(m.reports, newReport)
+			m.nextID++
+			m.cursor = len(m.reports) - 1
+			m.currentView = DetailView // 詳細画面に遷移
+		}
 	case "enter", "l":
 		if len(m.reports) > 0 {
 			m.currentView = DetailView

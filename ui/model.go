@@ -65,3 +65,13 @@ func InitialModel() Model { // 'initialModel' を 'InitialModel' に変更して
 func (m Model) Init() tea.Cmd {
 	return nil
 }
+
+// FindReportByDate は指定された日付（YYYY-MM-DD形式）の日報を検索します。
+func (m Model) FindReportByDate(date string) (models.Report, int, bool) {
+	for i, report := range m.reports {
+		if report.Date.Format("2006-01-02") == date {
+			return report, i, true
+		}
+	}
+	return models.Report{}, -1, false
+}
