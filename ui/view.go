@@ -41,10 +41,10 @@ func (m Model) renderListView() string {
 			dateStr := styles.DateStyle.Render(report.Date.Format("01/02 15:04"))
 
 			if m.cursor == i {
-				item := styles.SelectedItemStyle.Render(fmt.Sprintf("▶ %s  %s", dateStr, report.Title))
+				item := styles.SelectedItemStyle.Render(fmt.Sprintf("▶ %s", dateStr))
 				items = append(items, item)
 			} else {
-				item := styles.NormalItemStyle.Render(fmt.Sprintf("  %s  %s", dateStr, report.Title))
+				item := styles.NormalItemStyle.Render(fmt.Sprintf("  %s", dateStr))
 				items = append(items, item)
 			}
 		}
@@ -78,13 +78,6 @@ func (m Model) renderCreateView() string {
 	}
 	header := styles.HeaderStyle.Width(m.width - 4).Render(headerText)
 	sections = append(sections, header)
-
-	// タイトル入力
-	titleLabel := styles.LabelStyle.Render("📌 タイトル:")
-	titleBox := styles.ContentBoxStyle.Width(m.width - 4).Render(
-		titleLabel + "\n" + m.titleInput.View(),
-	)
-	sections = append(sections, titleBox)
 
 	// 内容入力
 	contentLabel := styles.LabelStyle.Render("📝 内容:")
@@ -126,12 +119,7 @@ func (m Model) renderDetailView() string {
 	)
 
 	// タイトル
-	titleSection := styles.ContentBoxStyle.Width(m.width - 4).Render(
-		styles.LabelStyle.Render("📌 タイトル:") + "\n" +
-			styles.TitleStyle.Render(report.Title) + "\n\n" +
-			metaInfo,
-	)
-	sections = append(sections, titleSection)
+	sections = append(sections, metaInfo)
 
 	// 内容
 	contentSection := styles.ContentBoxStyle.Width(m.width - 4).Height(12).Render(

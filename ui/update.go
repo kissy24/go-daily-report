@@ -44,9 +44,7 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "n":
 		m.currentView = CreateView
 		m.isEditing = false
-		m.titleInput.SetValue("")
 		m.contentArea.SetValue("")
-		m.titleInput.Focus()
 	case "enter", "l":
 		if len(m.reports) > 0 {
 			m.currentView = DetailView
@@ -69,24 +67,19 @@ func (m Model) handleCreateViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc":
 		m.currentView = ListView
-		m.titleInput.SetValue("")
 		m.contentArea.SetValue("")
-		m.titleInput.Blur()
 		m.isEditing = false
 		return m, nil
 	case "ctrl+s":
-		title := m.titleInput.Value()
 		content := m.contentArea.Value()
 
-		if title != "" {
+		if content != "" {
 			if m.isEditing {
-				m.reports[m.editingIndex].Title = title
 				m.reports[m.editingIndex].Content = content
 				m.reports[m.editingIndex].Date = time.Now()
 			} else {
 				newReport := models.Report{
 					ID:      m.nextID,
-					Title:   title,
 					Content: content,
 					Date:    time.Now(),
 				}
@@ -96,28 +89,16 @@ func (m Model) handleCreateViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 
 			m.currentView = ListView
-			m.titleInput.SetValue("")
 			m.contentArea.SetValue("")
-			m.titleInput.Blur()
 			m.isEditing = false
 		}
 		return m, nil
 	case "tab":
-		if m.titleInput.Focused() {
-			m.titleInput.Blur()
-			cmd = m.contentArea.Focus()
-		} else {
-			m.contentArea.Blur()
-			cmd = m.titleInput.Focus()
-		}
+		cmd = m.contentArea.Focus()
 		return m, cmd
 	}
 
-	if m.titleInput.Focused() {
-		m.titleInput, cmd = m.titleInput.Update(msg)
-	} else {
-		m.contentArea, cmd = m.contentArea.Update(msg)
-	}
+	m.contentArea, cmd = m.contentArea.Update(msg)
 
 	return m, cmd
 }
@@ -132,9 +113,7 @@ func (m Model) handleDetailViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.currentView = CreateView
 			m.isEditing = true
 			m.editingIndex = m.cursor
-			m.titleInput.SetValue(report.Title)
 			m.contentArea.SetValue(report.Content)
-			m.titleInput.Focus()
 		}
 	case "d":
 		if len(m.reports) > 0 {
