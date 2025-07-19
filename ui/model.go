@@ -13,8 +13,7 @@ type ViewType int
 
 const (
 	ListView ViewType = iota
-	CreateView
-	DetailView
+	EditView
 )
 
 type Model struct { // 'model' を 'Model' に変更してエクスポート

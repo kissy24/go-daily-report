@@ -28,10 +28,8 @@ func (m Model) handleKeyPress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch m.currentView {
 	case ListView:
 		return m.handleListViewKeys(msg)
-	case CreateView:
-		return m.handleCreateViewKeys(msg)
-	case DetailView:
-		return m.handleDetailViewKeys(msg)
+	case EditView:
+		return m.handleEditViewKeys(msg)
 	}
 
 	return m, nil
@@ -46,7 +44,11 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		_, index, found := m.FindReportByDate(today) // report を _ で無視
 		if found {
 			m.cursor = index
-			m.currentView = DetailView
+			m.currentView = EditView
+			m.isEditing = true
+			m.editingIndex = m.cursor
+			m.contentArea.SetValue(m.reports[m.cursor].Content)
+			return m, m.contentArea.Focus()
 		} else {
 			newReport := models.Report{
 				ID:      m.nextID,
@@ -56,11 +58,19 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.reports = append(m.reports, newReport)
 			m.nextID++
 			m.cursor = len(m.reports) - 1
-			m.currentView = DetailView // 詳細画面に遷移
+			m.currentView = EditView // 詳細画面に遷移
+			m.isEditing = true
+			m.editingIndex = m.cursor
+			m.contentArea.SetValue(newReport.Content)
+			return m, m.contentArea.Focus()
 		}
 	case "enter", "l":
 		if len(m.reports) > 0 {
-			m.currentView = DetailView
+			m.currentView = EditView
+			m.isEditing = true
+			m.editingIndex = m.cursor
+			m.contentArea.SetValue(m.reports[m.cursor].Content)
+			return m, m.contentArea.Focus()
 		}
 	case "up", "k":
 		if m.cursor > 0 {
@@ -74,7 +84,7 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleCreateViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m Model) handleEditViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg.String() {
@@ -106,38 +116,9 @@ func (m Model) handleCreateViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.isEditing = false
 		}
 		return m, nil
-	case "tab":
-		cmd = m.contentArea.Focus()
-		return m, cmd
 	}
 
 	m.contentArea, cmd = m.contentArea.Update(msg)
 
 	return m, cmd
-}
-
-func (m Model) handleDetailViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "esc", "q":
-		m.currentView = ListView
-	case "e":
-		if len(m.reports) > 0 {
-			report := m.reports[m.cursor]
-			m.currentView = CreateView
-			m.isEditing = true
-			m.editingIndex = m.cursor
-			m.contentArea.SetValue(report.Content)
-		}
-	case "d":
-		if len(m.reports) > 0 {
-			m.reports = append(m.reports[:m.cursor], m.reports[m.cursor+1:]...)
-			if m.cursor >= len(m.reports) && len(m.reports) > 0 {
-				m.cursor = len(m.reports) - 1
-			}
-			if len(m.reports) == 0 {
-				m.currentView = ListView
-			}
-		}
-	}
-	return m, nil
 }
