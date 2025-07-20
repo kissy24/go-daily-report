@@ -1,10 +1,13 @@
 package ui
 
 import (
+	"log"
 	"time"
-	"zan/models"
 
 	tea "github.com/charmbracelet/bubbletea"
+
+	"zan/data"
+	"zan/models"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -41,22 +44,22 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "n":
 		today := time.Now().Format("2006-01-02")
-		_, index, found := m.FindReportByDate(today) // report を _ で無視
+		report, index, found := m.FindReportByDate(today)
 		if found {
 			m.cursor = index
 			m.currentView = EditView
 			m.isEditing = true
 			m.editingIndex = m.cursor
-			m.contentArea.SetValue(m.reports[m.cursor].Content)
+			m.contentArea.SetValue(report.Content)
 			return m, m.contentArea.Focus()
 		} else {
 			newReport := models.Report{
-				ID:      m.nextID,
-				Content: "", // 空の内容で作成
+				ID:      int(time.Now().UnixNano()), // ユニークなIDを生成
+				Content: "",                         // 空の内容で作成
 				Date:    time.Now(),
 			}
+			// 新規作成時はまずメモリに追加し、保存時にファイルに書き込む
 			m.reports = append(m.reports, newReport)
-			m.nextID++
 			m.cursor = len(m.reports) - 1
 			m.currentView = EditView // 詳細画面に遷移
 			m.isEditing = true
@@ -92,28 +95,59 @@ func (m Model) handleEditViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.currentView = ListView
 		m.contentArea.SetValue("")
 		m.isEditing = false
+		// 編集をキャンセルした場合、新規作成中のレポートは削除
+		if m.editingIndex != -1 && m.reports[m.editingIndex].Content == "" {
+			m.reports = append(m.reports[:m.editingIndex], m.reports[m.editingIndex+1:]...)
+			if m.cursor >= len(m.reports) && m.cursor > 0 {
+				m.cursor--
+			}
+		}
 		return m, nil
 	case "ctrl+s":
 		content := m.contentArea.Value()
 
 		if content != "" {
-			if m.isEditing {
-				m.reports[m.editingIndex].Content = content
-				m.reports[m.editingIndex].Date = time.Now()
+			var reportToSave models.Report
+			if m.isEditing && m.editingIndex != -1 {
+				// 既存レポートの更新
+				reportToSave = m.reports[m.editingIndex]
+				reportToSave.Content = content
+				reportToSave.Date = time.Now()
 			} else {
-				newReport := models.Report{
-					ID:      m.nextID,
+				// 新規レポートの作成
+				reportToSave = models.Report{
+					ID:      int(time.Now().UnixNano()), // ユニークなIDを生成
 					Content: content,
 					Date:    time.Now(),
 				}
-				m.reports = append(m.reports, newReport)
-				m.nextID++
+				m.reports = append(m.reports, reportToSave)
 				m.cursor = len(m.reports) - 1
+			}
+
+			if err := data.SaveReport(reportToSave); err != nil {
+				log.Printf("日報の保存に失敗しました: %v", err)
+				// エラーメッセージをユーザーに表示するなどの処理を追加することも可能
+			} else {
+				// 保存成功後、reportsスライスを最新の状態に更新
+				updatedReports, err := data.GetAllReports()
+				if err != nil {
+					log.Printf("日報の再読み込みに失敗しました: %v", err)
+				} else {
+					m.reports = updatedReports
+					// 保存したレポートがリストのどこにあるか再検索し、カーソルを合わせる
+					for i, r := range m.reports {
+						if r.ID == reportToSave.ID {
+							m.cursor = i
+							break
+						}
+					}
+				}
 			}
 
 			m.currentView = ListView
 			m.contentArea.SetValue("")
 			m.isEditing = false
+			m.editingIndex = -1 // 編集インデックスをリセット
 		}
 		return m, nil
 	}
