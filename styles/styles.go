@@ -4,13 +4,13 @@ import "github.com/charmbracelet/lipgloss"
 
 var (
 	// カラーパレット
-	PrimaryColor   = lipgloss.Color("#7C3AED") // 紫
-	SecondaryColor = lipgloss.Color("#06B6D4") // シアン
-	AccentColor    = lipgloss.Color("#F59E0B") // オレンジ
-	SuccessColor   = lipgloss.Color("#10B981") // 緑
-	DangerColor    = lipgloss.Color("#EF4444") // 赤
-	MutedColor     = lipgloss.Color("#6B7280") // グレー
-	BgColor        = lipgloss.Color("#1F2937") // ダークグレー
+	PrimaryColor   = lipgloss.Color("#539bf5") // GitHub Dark Blue
+	SecondaryColor = lipgloss.Color("#8ddb8c") // GitHub Dark Green
+	AccentColor    = lipgloss.Color("#e3b341") // GitHub Dark Yellow/Orange
+	SuccessColor   = lipgloss.Color("#57ab5a") // GitHub Dark Success Green
+	DangerColor    = lipgloss.Color("#f85149") // GitHub Dark Danger Red
+	MutedColor     = lipgloss.Color("#768390") // GitHub Dark Gray
+	BgColor        = lipgloss.Color("#22272e") // GitHub Dark Background
 
 	// スタイル定義
 	TitleStyle = lipgloss.NewStyle().
