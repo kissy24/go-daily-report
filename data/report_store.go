@@ -3,7 +3,6 @@ package data
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -34,12 +33,12 @@ func SaveReport(report models.Report) error {
 		return fmt.Errorf("failed to marshal report: %w", err)
 	}
 
-	return ioutil.WriteFile(filePath, file, 0644)
+	return os.WriteFile(filePath, file, 0644)
 }
 
 // GetAllReports はすべてのJSONファイルを読み込み、[]models.Report のスライスとして返します。
 func GetAllReports() ([]models.Report, error) {
-	files, err := ioutil.ReadDir(reportsDir)
+	files, err := os.ReadDir(reportsDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []models.Report{}, nil // ディレクトリが存在しない場合は空のスライスを返す
@@ -54,7 +53,7 @@ func GetAllReports() ([]models.Report, error) {
 		}
 
 		filePath := filepath.Join(reportsDir, file.Name())
-		data, err := ioutil.ReadFile(filePath)
+		data, err := os.ReadFile(filePath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read report file %s: %w", file.Name(), err)
 		}
@@ -73,7 +72,7 @@ func GetReportByDate(date time.Time) (models.Report, error) {
 	fileName := date.Format("2006-01-02") + ".json"
 	filePath := filepath.Join(reportsDir, fileName)
 
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return models.Report{}, fmt.Errorf("failed to read report file for date %s: %w", date.Format("2006-01-02"), err)
 	}

@@ -54,9 +54,9 @@ graph TD
 
 ```go
 type Report struct {
-	ID      int
-	Content string
-	Date    time.Time
+  ID      int
+  Content string
+  Date    time.Time
 }
 ```
 
