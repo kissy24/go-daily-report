@@ -51,7 +51,7 @@ func InitialModel() Model {
 	ta.SetWidth(60)
 	ta.SetHeight(10)
 
-	return Model{
+	model := Model{
 		currentView:  ListView,
 		reports:      reports,
 		cursor:       0,
@@ -61,6 +61,43 @@ func InitialModel() Model {
 		width:        80,
 		height:       24,
 	}
+
+	// 起動時に本日の日報がない場合、新規作成し保存
+	today := time.Now()
+	_, err = data.GetReportByDate(today)
+	if err != nil {
+		// 本日の日報が存在しない場合
+		newReport := models.Report{
+			ID:      int(time.Now().UnixNano()), // ユニークなIDを生成
+			Content: "",                         // 空の内容で作成
+			Date:    today,
+		}
+
+		if err := data.SaveReport(newReport); err != nil {
+			log.Printf("起動時の日報の自動保存に失敗しました: %v", err)
+		} else {
+			// 保存成功後、reportsスライスを最新の状態に更新
+			updatedReports, err := data.GetAllReports()
+			if err != nil {
+				log.Printf("日報の再読み込みに失敗しました: %v", err)
+			} else {
+				model.reports = updatedReports
+				// 保存したレポートがリストのどこにあるか再検索し、カーソルを合わせる
+				for i, r := range model.reports {
+					if r.ID == newReport.ID {
+						model.cursor = i
+						break
+					}
+				}
+			}
+		}
+		model.currentView = ListView // ListViewに遷移
+		model.contentArea.SetValue("")
+		model.isEditing = false
+		model.editingIndex = -1 // 編集インデックスをリセット
+	}
+
+	return model
 }
 
 func (m Model) Init() tea.Cmd {

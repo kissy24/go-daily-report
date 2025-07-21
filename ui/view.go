@@ -54,7 +54,6 @@ func (m Model) renderListView() string {
 	// ヘルプ
 	var helpButtons []string
 	helpButtons = append(helpButtons, styles.PrimaryButtonStyle.Render("Enter")+" 詳細表示")
-	helpButtons = append(helpButtons, styles.PrimaryButtonStyle.Render("N")+" 本日の日報")
 	helpButtons = append(helpButtons, styles.SecondaryButtonStyle.Render("Q")+" 終了")
 	helpButtons = append(helpButtons, styles.SecondaryButtonStyle.Render("↑↓")+" 移動")
 

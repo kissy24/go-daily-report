@@ -42,31 +42,6 @@ func (m Model) handleListViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "q":
 		return m, tea.Quit
-	case "n":
-		today := time.Now().Format("2006-01-02")
-		report, index, found := m.FindReportByDate(today)
-		if found {
-			m.cursor = index
-			m.currentView = EditView
-			m.isEditing = true
-			m.editingIndex = m.cursor
-			m.contentArea.SetValue(report.Content)
-			return m, m.contentArea.Focus()
-		} else {
-			newReport := models.Report{
-				ID:      int(time.Now().UnixNano()), // ユニークなIDを生成
-				Content: "",                         // 空の内容で作成
-				Date:    time.Now(),
-			}
-			// 新規作成時はまずメモリに追加し、保存時にファイルに書き込む
-			m.reports = append(m.reports, newReport)
-			m.cursor = len(m.reports) - 1
-			m.currentView = EditView // 詳細画面に遷移
-			m.isEditing = true
-			m.editingIndex = m.cursor
-			m.contentArea.SetValue(newReport.Content)
-			return m, m.contentArea.Focus()
-		}
 	case "enter", "l":
 		if len(m.reports) > 0 {
 			m.currentView = EditView
