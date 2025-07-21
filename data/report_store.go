@@ -83,12 +83,3 @@ func GetReportByDate(date time.Time) (models.Report, error) {
 	}
 	return report, nil
 }
-
-// GetNextID は次に利用可能なIDを返します。
-// ファイル名が日付形式になるため、この関数は不要になりますが、
-// 既存の ui/model.go で使用されているため、一時的に残します。
-// 今後の変更で削除される予定です。
-func GetNextID() (int, error) {
-	// ファイル名がIDではなくなるため、常に1を返すように変更
-	return 1, nil
-}

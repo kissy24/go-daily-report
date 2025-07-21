@@ -25,7 +25,6 @@ type Model struct {
 
 	// 新規作成・編集用
 	contentArea  textarea.Model
-	nextID       int
 	editingIndex int
 	isEditing    bool
 
@@ -46,12 +45,6 @@ func InitialModel() Model {
 		log.Fatalf("日報データの読み込みに失敗しました: %v", err)
 	}
 
-	// nextID を計算
-	nextID, err := data.GetNextID()
-	if err != nil {
-		log.Fatalf("次のIDの取得に失敗しました: %v", err)
-	}
-
 	// テキストエリアの設定（スタイリング）
 	ta := textarea.New()
 	ta.Placeholder = "日報の内容を入力..."
@@ -63,7 +56,6 @@ func InitialModel() Model {
 		reports:      reports,
 		cursor:       0,
 		contentArea:  ta,
-		nextID:       nextID,
 		editingIndex: -1,
 		isEditing:    false,
 		width:        80,
@@ -88,7 +80,7 @@ func (m Model) FindReportByDate(date string) (models.Report, int, bool) {
 	}
 
 	for i, r := range m.reports {
-		if r.ID == report.ID {
+		if r.Date.Format("2006-01-02") == report.Date.Format("2006-01-02") {
 			return report, i, true
 		}
 	}
